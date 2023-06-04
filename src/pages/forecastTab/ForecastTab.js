@@ -1,13 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import axios from "axios";
+import kelvinToCelsius from "../../helpers/kelvinToCelsius";
+import createDateString from "../../helpers/createDataString";
 import './ForecastTab.css';
-
-const apiKey = '83c8bd1684c7f52645f7e29332cdc913'
-
-function createDateString(timestamp) {
-    const day = new Date(timestamp * 1000);
-    return day.toLocaleDateString('nl-NL', {weekday: 'long'});
-}
 
 function ForecastTab({coordinates}) {
     const [forecasts, setForecasts] = useState([]);
@@ -19,7 +14,7 @@ function ForecastTab({coordinates}) {
                 toggleLoading(true);
             try {
                 toggleError(false)
-                const response = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,current,hourly&appid=${apiKey}&lang=nl`)
+                const response = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,current,hourly&appid=${process.env.REACT_APP_API_KEY}&lang=nl`)
                 console.log(response.data)
                 const fiveDayForecast = response.data.list.filter((singleForecast) => {
                     return singleForecast.dt_txt.includes("12:00:00");
@@ -29,8 +24,11 @@ function ForecastTab({coordinates}) {
                 console.error(e);
                 toggleError(true)
             }
+            finally {
+                toggleLoading(false);
+            }
         }
-        toggleLoading(false);
+
 
         if (coordinates) {
             fetchForecasts();
@@ -55,7 +53,7 @@ function ForecastTab({coordinates}) {
 
                     <section className="forecast-weather">
             <span>
-              {singleForecast.main.temp}&deg; C
+              {kelvinToCelsius(singleForecast.main.temp)}
             </span>
                         <span className="weather-description">
               {singleForecast.weather[0].description}

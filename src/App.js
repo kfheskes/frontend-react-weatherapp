@@ -2,14 +2,13 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {Routes, Route} from 'react-router-dom'
 import './App.css';
+import kelvinToCelsius from "./helpers/kelvinToCelsius";
 import SearchBar from './components/searchBar/SearchBar';
 import TabBarMenu from './components/tabBarMenu/TabBarMenu';
 import MetricSlider from './components/metricSlider/MetricSlider';
 import ForecastTab from "./pages/forecastTab/ForecastTab";
 import TodayTab from "./pages/todayTab/TodayTab";
 
-
-const apiKey = '83c8bd1684c7f52645f7e29332cdc913'
 
 // onderstaande is de nieuwe endpoint van ForecastTab.js
 // `https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&exclude=minutely,current,hourly&appid={apiKey}&lang=nl`
@@ -26,7 +25,7 @@ function App() {
             toggleError(false);
 
             try {
-                const result = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${location},nl&appid=${apiKey}&lang=nl`);
+                const result = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${location},nl&appid=${process.env.REACT_APP_API_KEY}&lang=nl`);
                 setWeatherData(result.data);
                 console.log(result.data);
             } catch (e) {
@@ -55,7 +54,7 @@ function App() {
                         <>
                             <h2>{weatherData.weather[0].description}</h2>
                             <h3>{weatherData.name}</h3>
-                            <h1>{weatherData.main.temp}</h1>
+                            <h1>{kelvinToCelsius(weatherData.main.temp)}</h1>
                         </>
                     }
           </span>
@@ -67,7 +66,7 @@ function App() {
 
                     <div className="tab-wrapper">
                         <Routes>
-                            <Route path="/" element={<TodayTab/>} />
+                            <Route path="/" element={<TodayTab coordinates={weatherData.coord}/>} />
                             <Route path="/komende-week" element={<ForecastTab coordinates={weatherData.coord} />} />
                         </Routes>
                     </div>
