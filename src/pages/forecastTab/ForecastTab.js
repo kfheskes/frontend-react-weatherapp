@@ -11,10 +11,14 @@ function createDateString(timestamp) {
 
 function ForecastTab({coordinates}) {
     const [forecasts, setForecasts] = useState([]);
+    const [error, toggleError] = useState(false);
+    const [loading, toggleLoading] = useState(false);
 
     useEffect(() => {
         async function fetchForecasts() {
+                toggleLoading(true);
             try {
+                toggleError(false)
                 const response = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,current,hourly&appid=${apiKey}&lang=nl`)
                 console.log(response.data)
                 const fiveDayForecast = response.data.list.filter((singleForecast) => {
@@ -23,8 +27,10 @@ function ForecastTab({coordinates}) {
                 setForecasts(fiveDayForecast);
             } catch (e) {
                 console.error(e);
+                toggleError(true)
             }
         }
+        toggleLoading(false);
 
         if (coordinates) {
             fetchForecasts();
@@ -34,6 +40,13 @@ function ForecastTab({coordinates}) {
 
     return (
         <div className="tab-wrapper">
+            { loading && <span>Loading..... </span>}
+            { error && <span>Er is iets misgegaan met het ophalen van de data </span>}
+
+            {forecasts.length === 0 && !error &&
+                <span className="no-forecast"> Zoek eerst een locatie om het weer voor deze week te bekijken</span>
+            }
+
             {forecasts.map((singleForecast) => {
                 return <article className="forecast-day" key={singleForecast.dt}>
                     <p className="day-description">

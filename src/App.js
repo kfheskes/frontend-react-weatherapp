@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import {Routes, Route} from 'react-router-dom'
 import './App.css';
 import SearchBar from './components/searchBar/SearchBar';
 import TabBarMenu from './components/tabBarMenu/TabBarMenu';
 import MetricSlider from './components/metricSlider/MetricSlider';
 import ForecastTab from "./pages/forecastTab/ForecastTab";
+import TodayTab from "./pages/todayTab/TodayTab";
 
 
 const apiKey = '83c8bd1684c7f52645f7e29332cdc913'
@@ -21,6 +23,8 @@ function App() {
 
     useEffect(() => {
         async function fetchData() {
+            toggleError(false);
+
             try {
                 const result = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${location},nl&appid=${apiKey}&lang=nl`);
                 setWeatherData(result.data);
@@ -44,7 +48,7 @@ function App() {
                 {/*HEADER -------------------- */}
                 <div className="weather-header">
                     <SearchBar setLocationHandler={setLocation}/>
-                    {error && <span></span>}
+                    {error && <span className="wrong-location-error"> Oeps! deze locatie bestaat niet</span>}
 
                     <span className="location-details">
                     {Object.keys(weatherData).length > 0 &&
@@ -62,7 +66,10 @@ function App() {
                     <TabBarMenu/>
 
                     <div className="tab-wrapper">
-                        <ForecastTab coordinates={weatherData.coord}/>
+                        <Routes>
+                            <Route path="/" element={<TodayTab/>} />
+                            <Route path="/komende-week" element={<ForecastTab coordinates={weatherData.coord} />} />
+                        </Routes>
                     </div>
                 </div>
 
